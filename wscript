@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 VERSION='0.0.1'
-APPNAME='example'
+APPNAME='xCode'
 
 top = '.'
 out = 'build'
@@ -61,16 +61,14 @@ def build(bld):
   bld.env.INCLUDES += ['.', bld.bldnode.abspath()]
   bld(
     source       = bld.path.ant_glob(['src/lib/**/*.cpp']),
-    target       = 'SOURCE',
-    features     = 'cxx',
-    install_path = None,
+    target       = 'xc',
+    features     = 'cxx cxxshlib',
   )
   bld(
     source       = bld.path.ant_glob(['src/bin/**/*.cpp']),
     target       = APPNAME,
     features     = 'cxx cxxprogram',
-    use          = ['SOURCE'],
-    install_path = None,
+    use          = ['xc'],
   )
   bld.env.INCLUDES += ['gtest', 'gtest/include']
   bld(
@@ -87,12 +85,14 @@ def build(bld):
         source       = bld.path.ant_glob(['test/%s/**/*.cpp'%suite]),
         target       = 'ut_' + str(suite),
         features     = 'cxx cxxprogram test',
-        use          = ['SOURCE', 'GTEST', 'GMOCK'],
+        use          = ['xc', 'GTEST', 'GMOCK'],
         install_path = None,
       )
   bld.add_post_fun(waf_unit_test.summary)
   bld.add_post_fun(waf_unit_test.set_exit_code)
-
+  inc = bld.path.find_dir('src/lib')
+  for f in bld.path.ant_glob(['src/lib/**/*.hpp']):
+    bld.install_files('${PREFIX}/include/' + f.path_from(inc).replace(f.name, ''), f)
 
 from waflib.Build import BuildContext
 from waflib.Build import CleanContext
