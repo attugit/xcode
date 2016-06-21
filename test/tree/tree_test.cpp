@@ -84,43 +84,61 @@ namespace
 
   TEST(sibling_iterator_test, canConstructDefault)
   {
-    sibling_iterator<int> it;
+    siblings<int>::iterator it;
     (void)it;
   }
 
   TEST(sibling_iterator_test, canConstructWithNode)
   {
     node<int> n(7);
-    sibling_iterator<int> it(n);
+    siblings<int>::iterator it(&n);
     (void)it;
   }
 
   TEST(sibling_iterator_test, canRValueDereference)
   {
     node<int> n(7);
-    sibling_iterator<int> it(n);
+    siblings<int>::iterator it(&n);
     EXPECT_EQ(*it, 7);
   }
 
   TEST(sibling_iterator_test, canLValueDereference)
   {
     node<int> n(7);
-    sibling_iterator<int> it(n);
+    siblings<int>::iterator it(&n);
     *it = 44;
     EXPECT_EQ(n.value, 44);
   }
 
-  TEST(sibling_iterator_test, iteratorInteroperability)
+  TEST(sibling_iterator_test, interoperabilityCopyCtorFromDefault)
+  {
+    siblings<int>::iterator it;
+    siblings<int>::const_iterator cit(it);
+    EXPECT_EQ(cit, it);
+  }
+
+  TEST(sibling_iterator_test, interoperabilityCopyCtorFromCustom)
   {
     node<int> n(7);
-    sibling_iterator<const int> cit(n);
+    siblings<int>::iterator it(&n);
+    siblings<int>::const_iterator cit(it);
+    EXPECT_EQ(cit, it);
     EXPECT_EQ(*cit, 7);
-
-    sibling_iterator<int> it(n);
-    sibling_iterator<const int> cit2(it);
-    EXPECT_EQ(cit2, it);
-    EXPECT_EQ(*cit2, 7);
     *it = 44;
-    EXPECT_EQ(*cit2, 44);
+    EXPECT_EQ(*cit, 44);
+  }
+
+  TEST(sibling_iterator_test, interoperabilityCtor)
+  {
+    node<int> n(7);
+    siblings<int>::const_iterator cit(&n);
+    EXPECT_EQ(*cit, 7);
+  }
+
+  TEST(sibling_iterator_test, constIteratorCtor)
+  {
+    const node<int> n(7);
+    siblings<int>::const_iterator cit(&n);
+    EXPECT_EQ(*cit, 7);
   }
 }

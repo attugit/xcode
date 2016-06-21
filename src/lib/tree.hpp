@@ -1,6 +1,7 @@
 #pragma once
 #include <utility>
 #include <type_traits>
+#include <memory>
 #include <boost/iterator/iterator_facade.hpp>
 
 namespace xcode
@@ -31,46 +32,58 @@ namespace xcode
     }
   };
 
-  template <typename T>
-  struct sibling_iterator
-      : boost::iterator_facade<sibling_iterator<T>, T, boost::bidirectional_traversal_tag> {
+  template <typename T, typename Alloc = std::allocator<T>>
+  struct siblings {
   private:
-    struct enabler {
+    template <typename ValueType, typename NodeType, typename LinkType>
+    struct iterator_impl : boost::iterator_facade<iterator_impl<ValueType, NodeType, LinkType>,
+                                                  ValueType,
+                                                  boost::bidirectional_traversal_tag> {
+    private:
+      using node_type = NodeType;
+      using link_type = LinkType;
+      struct enabler {
+      };
+
+    public:
+      using value_type = ValueType;
+      iterator_impl() = default;
+
+      template <typename L>
+      explicit iterator_impl(
+          L* n,
+          typename std::enable_if<std::is_base_of<node_links, L>::value, enabler>::type = enabler{})
+          : link(n)
+      {
+      }
+
+      template <typename V, typename N, typename L>
+      iterator_impl(iterator_impl<V, N, L> const& other,
+                    typename std::enable_if<std::is_convertible<V, value_type>::value,
+                                            enabler>::type = enabler{})
+          : link(other.link)
+      {
+      }
+
+    private:
+      friend class boost::iterator_core_access;
+      template <typename, typename, typename>
+      friend struct iterator_impl;
+
+      template <typename V, typename N, typename L>
+      bool equal(iterator_impl<V, N, L> const& other) const
+      {
+        return link == other.link;
+      }
+
+      void increment() { link = link->next; }
+      void decrement() { link = link->prev; }
+      value_type& dereference() const { return static_cast<node_type*>(link)->value; }
+      link_type* link = nullptr;
     };
 
   public:
-    sibling_iterator() = default;
-
-    template <typename U>
-    explicit sibling_iterator(
-        node<U>& n,
-        typename std::enable_if<std::is_convertible<U, T>::value, enabler>::type = enabler{})
-        : link(static_cast<node_links*>(&n))
-    {
-    }
-
-    template <typename U>
-    sibling_iterator(
-        sibling_iterator<U> const& other,
-        typename std::enable_if<std::is_convertible<U, T>::value, enabler>::type = enabler{})
-        : link(other.link)
-    {
-    }
-
-  private:
-    friend class boost::iterator_core_access;
-    template <typename>
-    friend struct sibling_iterator;
-
-    template <typename U>
-    bool equal(sibling_iterator<U> const& other) const
-    {
-      return link == other.link;
-    }
-
-    void increment() { link = link->next; }
-    void decrement() { link = link->prev; }
-    T& dereference() const { return static_cast<node<T>*>(link)->value; }
-    node_links* link = nullptr;
+    using iterator = iterator_impl<T, node<T>, node_links>;
+    using const_iterator = iterator_impl<const T, const node<T>, const node_links>;
   };
 }
