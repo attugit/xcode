@@ -142,5 +142,10 @@ namespace xcode
       ptr->~node<T>();
       impl.deallocate(ptr, 1);
     }
+    template <typename... Args>
+    void emplace_back(Args&&... args)
+    {
+      emplace(end(), std::forward<Args>(args)...);
+    }
   };
 }
