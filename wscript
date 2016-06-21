@@ -16,6 +16,13 @@ flags = [
   '-pedantic-errors',
   '-Werror'
 ]
+
+modes = [
+  'debug',
+  'release',
+  'coverage'
+]
+
 def init(ctx):
   ctx.load('build_logs')
 
@@ -23,6 +30,14 @@ def options(opt):
   opt.load('compiler_cxx')
   opt.load('boost')
   opt.load('waf_unit_test')
+  opt.add_option( '-m', '--mode',
+          action  = 'store',
+          default = os.environ.get('MODE', modes[0]),
+          metavar = 'MODE',
+          dest    = 'mode',
+          choices = modes,
+          help    = 'Default build type, supported: ' + ', '.join(modes)
+          )
 
 def configure(conf):
   conf.setenv('base')
@@ -33,7 +48,7 @@ def configure(conf):
   conf.load('boost')
   conf.check_boost()
   conf.env.CXXFLAGS += flags
-  for variant in ['debug', 'release', 'coverage']:
+  for variant in modes:
     conf.setenv('base')
     newenv = conf.env.derive()
     newenv.detach()
@@ -52,6 +67,15 @@ def configure(conf):
   conf.setenv('release')
   conf.env.CXXFLAGS += ['-O3', '-march=native', '-fPIC', '-fno-rtti']
   conf.env.DEFINES += ['NDEBUG']
+
+  conf.env.MODE = conf.options.mode
+  conf.msg(msg='Default build mode',
+          result=conf.env.MODE)
+
+  conf.setenv(conf.env.MODE)
+  mode = conf.env.derive()
+  mode.detach()
+  conf.setenv('default', mode)
 
 import os
 from waflib.Tools import waf_unit_test
@@ -102,7 +126,7 @@ from waflib.Build import UninstallContext
 for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext):
   name = ctx.__name__.replace('Context','').lower()
   class debug(ctx):
-    cmd = name
+    cmd = name + '_debug'
     variant = 'debug'
   class release(ctx):
     cmd = name + '_release'
@@ -110,3 +134,7 @@ for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext):
   class coverage(ctx):
     cmd = name + '_coverage'
     variant = 'coverage'
+  class default(ctx):
+    cmd = name
+    variant = 'default'
+

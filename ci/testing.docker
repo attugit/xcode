@@ -1,0 +1,4 @@
+FROM attugit/dtest:v1.1
+
+ADD . attugit/xcode
+
