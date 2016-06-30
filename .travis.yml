@@ -13,4 +13,4 @@ before_install:
   - docker build -t attugit/xcode -f ci/testing.docker .
 
 script:
-  - docker run --env=CXX=$COMPILER --env=MODE=$BUILDTYPE --workdir=/attugit/xcode attugit/xcode /bin/bash -c "bash ./ci/run.sh"
+  - docker run --env=CXX=$COMPILER --env=BUILDTYPE=$BUILDTYPE --workdir=/attugit/xcode attugit/xcode /bin/bash -c "bash ./ci/run.sh"

@@ -17,12 +17,6 @@ flags = [
   '-Werror'
 ]
 
-modes = [
-  'debug',
-  'release',
-  'coverage'
-]
-
 def init(ctx):
   ctx.load('build_logs')
 
@@ -30,52 +24,12 @@ def options(opt):
   opt.load('compiler_cxx')
   opt.load('boost')
   opt.load('waf_unit_test')
-  opt.add_option( '-m', '--mode',
-          action  = 'store',
-          default = os.environ.get('MODE', modes[0]),
-          metavar = 'MODE',
-          dest    = 'mode',
-          choices = modes,
-          help    = 'Default build type, supported: ' + ', '.join(modes)
-          )
 
 def configure(conf):
-  conf.setenv('base')
-  conf.load('waf_unit_test')
-  conf.define('APPNAME', APPNAME)
-  conf.define('VERSION', VERSION)
   conf.load('compiler_cxx')
   conf.load('boost')
   conf.check_boost()
-  conf.env.CXXFLAGS += flags
-  for variant in modes:
-    conf.setenv('base')
-    newenv = conf.env.derive()
-    newenv.detach()
-    conf.setenv(variant, newenv)
-
-  conf.setenv('debug')
-  conf.env.CXXFLAGS += ['-g', '-O0']
-  conf.env.DEFINES += ['DEBUG']
-
-  conf.setenv('coverage')
-  conf.env.CXXFLAGS += ['-g', '-O0', '-fprofile-arcs', '-ftest-coverage', '-pg']
-  conf.env.DEFINES += ['NDEBUG']
-  conf.env.LIB += ['gcov']
-  conf.env.LINKFLAGS += ['-pg']
-
-  conf.setenv('release')
-  conf.env.CXXFLAGS += ['-O3', '-march=native', '-fPIC', '-fno-rtti']
-  conf.env.DEFINES += ['NDEBUG']
-
-  conf.env.MODE = conf.options.mode
-  conf.msg(msg='Default build mode',
-          result=conf.env.MODE)
-
-  conf.setenv(conf.env.MODE)
-  mode = conf.env.derive()
-  mode.detach()
-  conf.setenv('default', mode)
+  conf.load('waf_unit_test')
 
 import os
 from waflib.Tools import waf_unit_test
@@ -83,6 +37,13 @@ def build(bld):
   if not bld.variant:
     bld.fatal('try "waf --help"')
   bld.env.INCLUDES += ['.', bld.bldnode.abspath()]
+  bld.env.CXXFLAGS += flags
+  if bld.variant == 'debug':
+    bld.env.CXXFLAGS += ['-g', '-O0']
+    bld.env.DEFINES += ['DEBUG']
+  if bld.variant == 'release':
+    bld.env.CXXFLAGS += ['-O3', '-march=native', '-fPIC', '-fno-rtti']
+    bld.env.DEFINES += ['NDEBUG']
   bld(
     source       = bld.path.ant_glob(['src/lib/**/*.cpp']),
     target       = 'xc',
@@ -131,10 +92,4 @@ for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext):
   class release(ctx):
     cmd = name + '_release'
     variant = 'release'
-  class coverage(ctx):
-    cmd = name + '_coverage'
-    variant = 'coverage'
-  class default(ctx):
-    cmd = name
-    variant = 'default'
 
