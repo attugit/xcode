@@ -28,4 +28,16 @@ namespace xcode
     {
     }
   };
+
+  template <typename T>
+  T& get(link& lnk)
+  {
+    return static_cast<node<T>&>(lnk).value;
+  }
+
+  template <typename T>
+  T const& get(link const& lnk)
+  {
+    return static_cast<node<T> const&>(lnk).value;
+  }
 }

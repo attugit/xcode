@@ -68,9 +68,18 @@ namespace xcode
         return link == other.link;
       }
 
-      void increment() { link = link->next; }
-      void decrement() { link = link->prev; }
-      value_type& dereference() const { return static_cast<node_type*>(link)->value; }
+      void increment()
+      {
+        link = link->next;
+      }
+      void decrement()
+      {
+        link = link->prev;
+      }
+      value_type& dereference() const
+      {
+        return get<value_type>(*link);
+      }
       link_type* link = nullptr;
     };
 
@@ -88,18 +97,79 @@ namespace xcode
     siblings() = default;
     ~siblings()
     {
+      clear();
+    }
+
+    /// Element access
+    reference front()
+    {
+      return get<value_type>(*impl.root.next);
+    }
+    const_reference front() const
+    {
+      return get<value_type>(*impl.root.next);
+    }
+    reference back()
+    {
+      return get<value_type>(*impl.root.prev);
+    }
+    const_reference back() const
+    {
+      return get<value_type>(*impl.root.prev);
+    }
+
+    /// Iterators
+    iterator begin()
+    {
+      return iterator{impl.root.next};
+    }
+    const_iterator cbegin() const
+    {
+      return const_iterator{impl.root.next};
+    }
+    const_iterator begin() const
+    {
+      return cbegin();
+    }
+    iterator end()
+    {
+      return iterator{&impl.root};
+    }
+    const_iterator cend() const
+    {
+      return const_iterator{&impl.root};
+    }
+    const_iterator end() const
+    {
+      return cend();
+    }
+    reverse_iterator rbegin();
+    const_reverse_iterator crbegin() const;
+    const_reverse_iterator rbegin() const;
+    reverse_iterator rend();
+    const_reverse_iterator crend() const;
+    const_reverse_iterator rend() const;
+
+    /// Capacity
+    bool empty() const
+    {
+      return begin() == end();
+    }
+    size_type size() const
+    {
+      return impl.size;
+    }
+    size_type max_size() const;
+
+    /// Modifiers
+    void clear()
+    {
       while (!empty()) {
         erase(begin());
       }
     }
-    iterator begin() { return iterator{impl.root.next}; }
-    const_iterator cbegin() const { return const_iterator{impl.root.next}; }
-    const_iterator begin() const { return cbegin(); }
-    iterator end() { return iterator{&impl.root}; }
-    const_iterator cend() const { return const_iterator{&impl.root}; }
-    const_iterator end() const { return cend(); }
-    bool empty() const { return begin() == end(); }
-    size_type size() const { return impl.size; }
+    iterator insert(const_iterator, const_reference);
+    iterator insert(const_iterator, value_type&&);
     template <typename... Args>
     void emplace(iterator it, Args&&... args)
     {

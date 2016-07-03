@@ -3,8 +3,14 @@
 
 namespace
 {
-  bool is_first(xcode::link const& lnk) { return lnk.prev == &lnk; }
-  bool is_last(xcode::link const& lnk) { return lnk.next == &lnk; }
+  bool is_first(xcode::link const& lnk)
+  {
+    return lnk.prev == &lnk;
+  }
+  bool is_last(xcode::link const& lnk)
+  {
+    return lnk.next == &lnk;
+  }
 }
 
 xcode::link::link() : prev(this), next(this), children(nullptr), parent(nullptr)

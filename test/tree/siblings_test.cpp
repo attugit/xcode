@@ -15,6 +15,18 @@ namespace
     EXPECT_EQ(sib.begin(), sib.end());
   }
 
+  /// Element access
+  TEST(siblings_test, canGetFront)
+  {
+    siblings<int> sib;
+    sib.emplace(sib.end(), 7);
+    EXPECT_EQ(sib.front(), 7);
+    sib.front() = 44;
+    EXPECT_EQ(*sib.begin(), 44);
+    ASSERT_EQ(sib.size(), 1u);
+    EXPECT_EQ(sib.front(), sib.back());
+  }
+
   TEST(siblings_test, canEmplace)
   {
     siblings<int> sib;
