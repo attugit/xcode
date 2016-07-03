@@ -7,11 +7,6 @@
 
 namespace xcode
 {
-  struct node_links {
-    node_links* prev = nullptr;
-    node_links* next = nullptr;
-  };
-
   template <typename T, typename Alloc = std::allocator<T>>
   struct siblings {
     using allocator_type = Alloc;
