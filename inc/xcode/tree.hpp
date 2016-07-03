@@ -3,33 +3,13 @@
 #include <type_traits>
 #include <memory>
 #include <boost/iterator/iterator_facade.hpp>
+#include <xcode/node.hpp>
 
 namespace xcode
 {
   struct node_links {
     node_links* prev = nullptr;
     node_links* next = nullptr;
-    node_links* parent = nullptr;
-    node_links* children = nullptr;
-
-    void hook_after(node_links&);
-
-    void hook_under(node_links&);
-
-    void bind_after(node_links&);
-
-    void unlink();
-  };
-
-  template <typename T>
-  struct node : node_links {
-    using value_type = T;
-    value_type value;
-
-    template <typename... Args>
-    explicit node(Args&&... args) : value(std::forward<Args>(args)...)
-    {
-    }
   };
 
   template <typename T, typename Alloc = std::allocator<T>>
@@ -67,7 +47,7 @@ namespace xcode
       template <typename L>
       explicit iterator_impl(
           L* n,
-          typename std::enable_if<std::is_base_of<node_links, L>::value, enabler>::type = enabler{})
+          typename std::enable_if<std::is_base_of<link, L>::value, enabler>::type = enabler{})
           : link(n)
       {
       }
@@ -100,18 +80,17 @@ namespace xcode
     };
 
     struct impl_type : node_allocator {
-      node_links root;
+      link root;
       size_type size = 0;
     } impl;
 
   public:
-    using iterator = iterator_impl<value_type, node<value_type>, node_links>;
-    using const_iterator =
-        iterator_impl<const value_type, const node<value_type>, const node_links>;
+    using iterator = iterator_impl<value_type, node<value_type>, link>;
+    using const_iterator = iterator_impl<const value_type, const node<value_type>, const link>;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-    siblings() { impl.root.hook_after(impl.root); }
+    siblings() = default;
     ~siblings()
     {
       while (!empty()) {
@@ -131,13 +110,13 @@ namespace xcode
     {
       auto ptr = impl.allocate(1);
       new (ptr) node<T>(std::forward<Args>(args)...);
-      ptr->hook_after(*(it.link));
+      ptr->hook(*(it.link));
       ++impl.size;
     }
     void erase(iterator it)
     {
       auto ptr = static_cast<node<T>*>(it.link);
-      ptr->unlink();
+      ptr->unhook();
       --impl.size;
       ptr->~node<T>();
       impl.deallocate(ptr, 1);

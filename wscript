@@ -36,7 +36,7 @@ from waflib.Tools import waf_unit_test
 def build(bld):
   if not bld.variant:
     bld.fatal('try "waf --help"')
-  bld.env.INCLUDES += ['.', bld.bldnode.abspath()]
+  bld.env.INCLUDES += ['.', 'inc']
   bld.env.CXXFLAGS += flags
   if bld.variant == 'debug':
     bld.env.CXXFLAGS += ['-g', '-O0']
@@ -75,8 +75,8 @@ def build(bld):
       )
   bld.add_post_fun(waf_unit_test.summary)
   bld.add_post_fun(waf_unit_test.set_exit_code)
-  inc = bld.path.find_dir('src/lib')
-  for f in bld.path.ant_glob(['src/lib/**/*.hpp']):
+  inc = bld.path.find_dir('inc')
+  for f in bld.path.ant_glob(['inc/**/*.hpp']):
     bld.install_files('${PREFIX}/include/' + f.path_from(inc).replace(f.name, ''), f)
 
 from waflib.Build import BuildContext
