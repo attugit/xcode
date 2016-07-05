@@ -2,6 +2,7 @@
 #include <utility>
 #include <type_traits>
 #include <memory>
+#include <iterator>
 #include <initializer_list>
 #include <boost/iterator/iterator_facade.hpp>
 #include <xcode/node.hpp>
@@ -96,11 +97,21 @@ namespace xcode
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     siblings() = default;
+    template <typename InputIt>
+    siblings(InputIt first, InputIt last) : impl()
+    {
+      for (; first != last; ++first) {
+        emplace(end(), *first);
+      }
+    }
     siblings(std::initializer_list<value_type> init) : impl()
     {
       for (auto& x : init) {
         emplace(end(), std::move(x));
       }
+    }
+    siblings(siblings const& sib) : siblings(std::begin(sib), std::end(sib))
+    {
     }
     ~siblings()
     {

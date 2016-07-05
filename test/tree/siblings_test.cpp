@@ -1,4 +1,5 @@
 #include "inc/xcode/siblings.hpp"
+#include <vector>
 #include <gtest/gtest.h>
 
 namespace
@@ -18,6 +19,32 @@ namespace
   TEST(siblings_test, canInitConstruct)
   {
     siblings<int> sib({7, 44});
+    EXPECT_EQ(sib.size(), 2u);
+    EXPECT_EQ(sib.front(), 7);
+    EXPECT_EQ(sib.back(), 44);
+  }
+
+  TEST(siblings_test, canInitAssign)
+  {
+    siblings<int> sib = {7, 44};
+    EXPECT_EQ(sib.size(), 2u);
+    EXPECT_EQ(sib.front(), 7);
+    EXPECT_EQ(sib.back(), 44);
+  }
+
+  TEST(siblings_test, canRangeConstruct)
+  {
+    std::vector<int> vec = {7, 44};
+    siblings<int> sib(std::begin(vec), std::end(vec));
+    EXPECT_EQ(sib.size(), 2u);
+    EXPECT_EQ(sib.front(), 7);
+    EXPECT_EQ(sib.back(), 44);
+  }
+
+  TEST(siblings_test, canCopyConstruct)
+  {
+    siblings<int> const orig = {7, 44};
+    siblings<int> sib(orig);
     EXPECT_EQ(sib.size(), 2u);
     EXPECT_EQ(sib.front(), 7);
     EXPECT_EQ(sib.back(), 44);
