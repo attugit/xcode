@@ -50,6 +50,18 @@ namespace
     EXPECT_EQ(sib.back(), 44);
   }
 
+  TEST(siblings_test, canMoveConstruct)
+  {
+    siblings<int> orig = {7, 44};
+    siblings<int> sib(std::move(orig));
+    EXPECT_EQ(sib.size(), 2u);
+    EXPECT_EQ(sib.front(), 7);
+    EXPECT_EQ(sib.back(), 44);
+    EXPECT_TRUE(orig.empty());
+    EXPECT_EQ(orig.size(), 0u);
+    EXPECT_EQ(orig.begin(), orig.end());
+  }
+
   /// Element access
   TEST(siblings_test, canGetFront)
   {

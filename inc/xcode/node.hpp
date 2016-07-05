@@ -13,9 +13,16 @@ namespace xcode
     handle_t children;
     handle_t parent;
 
-    link();
-    void hook(link&);
-    void unhook();
+    link() noexcept;
+    link(link const&) = delete;
+    link(link&&) noexcept;
+
+    link& operator=(link const&) = delete;
+    link& operator=(link&&) noexcept;
+
+    void hook(link&) noexcept;
+    void unhook() noexcept;
+    void swap(link&) noexcept;
   };
 
   template <typename T>

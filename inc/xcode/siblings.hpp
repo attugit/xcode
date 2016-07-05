@@ -98,13 +98,13 @@ namespace xcode
 
     siblings() = default;
     template <typename InputIt>
-    siblings(InputIt first, InputIt last) : impl()
+    siblings(InputIt first, InputIt last) : siblings()
     {
       for (; first != last; ++first) {
         emplace(end(), *first);
       }
     }
-    siblings(std::initializer_list<value_type> init) : impl()
+    siblings(std::initializer_list<value_type> init) : siblings()
     {
       for (auto& x : init) {
         emplace(end(), std::move(x));
@@ -112,6 +112,21 @@ namespace xcode
     }
     siblings(siblings const& sib) : siblings(std::begin(sib), std::end(sib))
     {
+    }
+    siblings(siblings&& sib) : siblings()
+    {
+      /// TODO: reparent, rehook, move allocator
+      sib.impl.root.next->prev = link::handle_t{&impl.root};
+      sib.impl.root.prev->next = link::handle_t{&impl.root};
+      impl.root.next = sib.impl.root.next;
+      impl.root.prev = sib.impl.root.prev;
+      sib.impl.root.next = link::handle_t{&sib.impl.root};
+      sib.impl.root.prev = link::handle_t{&sib.impl.root};
+      impl.size = sib.impl.size;
+      sib.impl.size = 0;
+      for (auto it = begin(); it != end(); ++it) {
+        it.link->parent = link::handle_t{&impl.root};
+      }
     }
     ~siblings()
     {
