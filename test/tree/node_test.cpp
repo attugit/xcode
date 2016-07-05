@@ -35,12 +35,12 @@ namespace
     EXPECT_EQ(n1.parent, &n0);
     EXPECT_EQ(n2.parent, &n0);
     EXPECT_EQ(n3.parent, &n0);
-    EXPECT_EQ(n1.prev, &n2);
-    EXPECT_EQ(n2.next, &n1);
-    EXPECT_EQ(n1.next, &n3);
-    EXPECT_EQ(n3.prev, &n1);
-    EXPECT_EQ(n3.next, &n2);
-    EXPECT_EQ(n2.prev, &n3);
+    EXPECT_EQ(n2.next, &n3);
+    EXPECT_EQ(n3.next, &n1);
+    EXPECT_EQ(n1.next, &n2);
+    EXPECT_EQ(n1.prev, &n3);
+    EXPECT_EQ(n3.prev, &n2);
+    EXPECT_EQ(n2.prev, &n1);
 
     n3.unhook();
     EXPECT_FALSE(n3.parent);

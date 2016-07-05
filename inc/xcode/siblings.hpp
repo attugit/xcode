@@ -2,6 +2,7 @@
 #include <utility>
 #include <type_traits>
 #include <memory>
+#include <initializer_list>
 #include <boost/iterator/iterator_facade.hpp>
 #include <xcode/node.hpp>
 
@@ -95,6 +96,12 @@ namespace xcode
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     siblings() = default;
+    siblings(std::initializer_list<value_type> init) : impl()
+    {
+      for (auto& x : init) {
+        emplace(end(), std::move(x));
+      }
+    }
     ~siblings()
     {
       clear();
@@ -168,15 +175,22 @@ namespace xcode
         erase(begin());
       }
     }
-    iterator insert(const_iterator, const_reference);
-    iterator insert(const_iterator, value_type&&);
+    iterator insert(const_iterator pos, const_reference val)
+    {
+      return emplace(pos, val);
+    }
+    iterator insert(const_iterator pos, value_type&& val)
+    {
+      return emplace(pos, std::move(val));
+    }
     template <typename... Args>
-    void emplace(iterator it, Args&&... args)
+    iterator emplace(const_iterator it, Args&&... args)
     {
       auto ptr = impl.allocate(1);
       new (ptr) node<T>(std::forward<Args>(args)...);
-      ptr->hook(*(it.link));
+      ptr->hook(const_cast<link&>(*(it.link)));
       ++impl.size;
+      return iterator{ptr};
     }
     void erase(iterator it)
     {

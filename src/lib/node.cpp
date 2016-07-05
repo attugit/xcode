@@ -17,15 +17,15 @@ xcode::link::link() : prev(this), next(this), children(nullptr), parent(nullptr)
 {
 }
 
-void xcode::link::hook(link& prv)
+void xcode::link::hook(link& nxt)
 {
   assert(is_first(*this));
   assert(is_last(*this));
-  parent = prv.parent;
-  next = prv.next;
-  next->prev = handle_t{this};
-  prv.next = handle_t{this};
-  prev = handle_t{&prv};
+  parent = nxt.parent;
+  prev = nxt.prev;
+  prev->next = handle_t{this};
+  nxt.prev = handle_t{this};
+  next = handle_t{&nxt};
 }
 
 void xcode::link::unhook()
