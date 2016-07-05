@@ -11,8 +11,8 @@ namespace
   {
     xcode::link n0, n1, n2, n3;
 
-    EXPECT_FALSE(n0.parent);
     EXPECT_FALSE(n0.children);
+    EXPECT_EQ(n0.parent, &n0);
     EXPECT_EQ(n0.next, &n0);
     EXPECT_EQ(n0.prev, &n0);
 
@@ -43,7 +43,7 @@ namespace
     EXPECT_EQ(n2.prev, &n1);
 
     n3.unhook();
-    EXPECT_FALSE(n3.parent);
+    EXPECT_EQ(n3.parent, &n3);
     EXPECT_EQ(n3.next, &n3);
     EXPECT_EQ(n3.prev, &n3);
     EXPECT_EQ(n0.children, &n1);
@@ -55,7 +55,7 @@ namespace
     EXPECT_EQ(n2.prev, &n1);
 
     n1.unhook();
-    EXPECT_FALSE(n1.parent);
+    EXPECT_EQ(n1.parent, &n1);
     EXPECT_EQ(n1.next, &n1);
     EXPECT_EQ(n1.prev, &n1);
     EXPECT_EQ(n0.children, &n2);
@@ -63,7 +63,7 @@ namespace
     EXPECT_EQ(n2.prev, &n2);
 
     n2.unhook();
-    EXPECT_FALSE(n2.parent);
+    EXPECT_EQ(n2.parent, &n2);
     EXPECT_EQ(n2.next, &n2);
     EXPECT_EQ(n2.prev, &n2);
     EXPECT_FALSE(n0.children);

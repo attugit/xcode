@@ -13,7 +13,7 @@ namespace
   }
 }
 
-xcode::link::link() : prev(this), next(this), children(nullptr), parent(nullptr)
+xcode::link::link() : prev(this), next(this), children(nullptr), parent(this)
 {
 }
 
@@ -30,12 +30,12 @@ void xcode::link::hook(link& nxt)
 
 void xcode::link::unhook()
 {
-  if (parent && parent->children == this) {
+  if (parent->children == this) {
     parent->children = is_last(*this) ? nullptr : next;
   }
   next->prev = is_first(*this) ? next : prev;
   prev->next = is_last(*this) ? prev : next;
   next = this;
   prev = this;
-  parent = nullptr;
+  parent = this;
 }
