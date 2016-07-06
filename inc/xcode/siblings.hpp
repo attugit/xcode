@@ -90,6 +90,12 @@ namespace xcode
       size_type size = 0;
     } impl;
 
+    void reparent() {
+      for (auto it = begin(); it != end(); ++it) {
+        it.link->parent = link::handle_t{&impl.root};
+      }
+    }
+
   public:
     using iterator = iterator_impl<value_type, node<value_type>, link>;
     using const_iterator = iterator_impl<const value_type, const node<value_type>, const link>;
@@ -118,9 +124,8 @@ namespace xcode
       using std::swap;
       swap(sib.impl.root, impl.root);
       swap(sib.impl.size, impl.size);
-      for (auto it = begin(); it != end(); ++it) {
-        it.link->parent = link::handle_t{&impl.root};
-      }
+      reparent();
+      sib.reparent();
     }
     siblings& operator=(siblings const& sib)
     {
@@ -128,6 +133,15 @@ namespace xcode
       for (auto const& x : sib) {
         emplace(end(), x);
       }
+      return *this;
+    }
+    siblings& operator=(siblings&& sib)
+    {
+      using std::swap;
+      swap(sib.impl.root, impl.root);
+      swap(sib.impl.size, impl.size);
+      reparent();
+      sib.reparent();
       return *this;
     }
     ~siblings()
