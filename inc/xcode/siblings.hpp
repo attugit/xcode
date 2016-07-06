@@ -115,18 +115,20 @@ namespace xcode
     }
     siblings(siblings&& sib) : siblings()
     {
-      /// TODO: reparent, rehook, move allocator
-      sib.impl.root.next->prev = link::handle_t{&impl.root};
-      sib.impl.root.prev->next = link::handle_t{&impl.root};
-      impl.root.next = sib.impl.root.next;
-      impl.root.prev = sib.impl.root.prev;
-      sib.impl.root.next = link::handle_t{&sib.impl.root};
-      sib.impl.root.prev = link::handle_t{&sib.impl.root};
-      impl.size = sib.impl.size;
-      sib.impl.size = 0;
+      using std::swap;
+      swap(sib.impl.root, impl.root);
+      swap(sib.impl.size, impl.size);
       for (auto it = begin(); it != end(); ++it) {
         it.link->parent = link::handle_t{&impl.root};
       }
+    }
+    siblings& operator=(siblings const& sib)
+    {
+      clear();
+      for (auto const& x : sib) {
+        emplace(end(), x);
+      }
+      return *this;
     }
     ~siblings()
     {

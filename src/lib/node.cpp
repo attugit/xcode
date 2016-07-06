@@ -23,7 +23,7 @@ namespace
   {
     if (n != xcode::link::handle_t{&other}) {
       lnk.*hdl = n;
-      lnk.*hdl->*cntr = xcode::link::handle_t{&lnk};
+      if (cntr) lnk.*hdl->*cntr = xcode::link::handle_t{&lnk};
     }
     else
     {
@@ -43,7 +43,7 @@ namespace
   }
 }
 
-xcode::link::link() noexcept : prev(this), next(this), children(nullptr), parent(this)
+xcode::link::link() noexcept : prev(this), next(this), children(this), parent(this)
 {
 }
 
@@ -51,6 +51,7 @@ void xcode::link::swap(link& lnk) noexcept
 {
   exchange(&link::prev, &link::next, *this, lnk);
   exchange(&link::next, &link::prev, *this, lnk);
+  exchange(&link::parent, nullptr, *this, lnk);
 }
 
 xcode::link::link(link&& lnk) noexcept : link()
@@ -78,9 +79,6 @@ void xcode::link::hook(link& nxt) noexcept
 
 void xcode::link::unhook() noexcept
 {
-  if (parent->children == this) {
-    parent->children = is_last(*this) ? nullptr : next;
-  }
   next->prev = is_first(*this) ? next : prev;
   prev->next = is_last(*this) ? prev : next;
   next = this;

@@ -62,6 +62,22 @@ namespace
     EXPECT_EQ(orig.begin(), orig.end());
   }
 
+  TEST(siblings_test, canCopyAssign)
+  {
+    siblings<int> const other = {1, 2, 3};
+    siblings<int> const orig = {7, 44};
+    siblings<int> sib;
+    ASSERT_EQ(sib.size(), 0u);
+    sib = other;
+    ASSERT_EQ(sib.size(), 3u);
+    EXPECT_EQ(sib.front(), 1);
+    EXPECT_EQ(sib.back(), 3);
+    sib = orig;
+    EXPECT_EQ(sib.size(), 2u);
+    EXPECT_EQ(sib.front(), 7);
+    EXPECT_EQ(sib.back(), 44);
+  }
+
   /// Element access
   TEST(siblings_test, canGetFront)
   {
