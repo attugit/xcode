@@ -27,6 +27,7 @@ namespace xcode
 
   private:
     using node_allocator = typename traits::template rebind_alloc<node<T>>;
+    using link_allocator = typename traits::template rebind_alloc<link>;
     template <typename ValueType, typename NodeType, typename LinkType>
     struct iterator_impl : boost::iterator_facade<iterator_impl<ValueType, NodeType, LinkType>,
                                                   ValueType,
@@ -85,15 +86,33 @@ namespace xcode
       link_type* link = nullptr;
     };
 
-    struct impl_type : node_allocator {
+    struct impl_type : node_allocator, link_allocator {
+      impl_type()
+      {
+        root.children = link_allocator::allocate(1);
+        new (root.children) link();
+        root.children->parent = &root;
+      };
+      ~impl_type()
+      {
+        root.children->~link();
+        link_allocator::deallocate(root.children, 1);
+      }
       link root;
       size_type size = 0;
+      link& front()
+      {
+        return *root.children;
+      };
+      link const& front() const
+      {
+        return *root.children;
+      };
     } impl;
 
-    void reparent() {
-      for (auto it = begin(); it != end(); ++it) {
-        it.link->parent = link::handle_t{&impl.root};
-      }
+    void reparent()
+    {
+      impl.root.children->parent = &impl.root;
     }
 
   public:
@@ -122,7 +141,7 @@ namespace xcode
     siblings(siblings&& sib) : siblings()
     {
       using std::swap;
-      swap(sib.impl.root, impl.root);
+      swap(sib.impl.root.children, impl.root.children);
       swap(sib.impl.size, impl.size);
       reparent();
       sib.reparent();
@@ -138,7 +157,7 @@ namespace xcode
     siblings& operator=(siblings&& sib)
     {
       using std::swap;
-      swap(sib.impl.root, impl.root);
+      swap(sib.impl.root.children, impl.root.children);
       swap(sib.impl.size, impl.size);
       reparent();
       sib.reparent();
@@ -152,29 +171,29 @@ namespace xcode
     /// Element access
     reference front()
     {
-      return get<value_type>(*impl.root.next);
+      return get<value_type>(*impl.front().next);
     }
     const_reference front() const
     {
-      return get<value_type>(*impl.root.next);
+      return get<value_type>(*impl.front().next);
     }
     reference back()
     {
-      return get<value_type>(*impl.root.prev);
+      return get<value_type>(*impl.front().prev);
     }
     const_reference back() const
     {
-      return get<value_type>(*impl.root.prev);
+      return get<value_type>(*impl.front().prev);
     }
 
     /// Iterators
     iterator begin()
     {
-      return iterator{impl.root.next};
+      return iterator{impl.front().next};
     }
     const_iterator cbegin() const
     {
-      return const_iterator{impl.root.next};
+      return const_iterator{impl.front().next};
     }
     const_iterator begin() const
     {
@@ -182,11 +201,11 @@ namespace xcode
     }
     iterator end()
     {
-      return iterator{&impl.root};
+      return iterator{&impl.front()};
     }
     const_iterator cend() const
     {
-      return const_iterator{&impl.root};
+      return const_iterator{&impl.front()};
     }
     const_iterator end() const
     {
@@ -228,7 +247,7 @@ namespace xcode
     template <typename... Args>
     iterator emplace(const_iterator it, Args&&... args)
     {
-      auto ptr = impl.allocate(1);
+      auto ptr = impl.node_allocator::allocate(1);
       new (ptr) node<T>(std::forward<Args>(args)...);
       ptr->hook(const_cast<link&>(*(it.link)));
       ++impl.size;
@@ -240,7 +259,7 @@ namespace xcode
       ptr->unhook();
       --impl.size;
       ptr->~node<T>();
-      impl.deallocate(ptr, 1);
+      impl.node_allocator::deallocate(ptr, 1);
     }
     template <typename... Args>
     void emplace_back(Args&&... args)
