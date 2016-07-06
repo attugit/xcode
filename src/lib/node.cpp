@@ -3,7 +3,7 @@
 
 namespace
 {
-  bool is_cycled(xcode::link::handle_t xcode::link::*hdl, xcode::link const& lnk)
+  bool is_cycled(xcode::link::memptr hdl, xcode::link const& lnk)
   {
     return lnk.*hdl == &lnk;
   }
@@ -15,24 +15,24 @@ namespace
   {
     return is_cycled(&xcode::link::next, lnk);
   }
-  void pass(xcode::link::handle_t xcode::link::*hdl,
-            xcode::link::handle_t xcode::link::*cntr,
-            xcode::link::handle_t n,
+  void pass(xcode::link::memptr hdl,
+            xcode::link::memptr cntr,
+            xcode::link* n,
             xcode::link& lnk,
             xcode::link& other)
   {
-    if (n != xcode::link::handle_t{&other}) {
+    if (n != &other) {
       lnk.*hdl = n;
-      if (cntr) lnk.*hdl->*cntr = xcode::link::handle_t{&lnk};
+      lnk.*hdl->*cntr = &lnk;
     }
     else
     {
-      lnk.*hdl = xcode::link::handle_t{&lnk};
+      lnk.*hdl = &lnk;
     }
   }
 
-  void exchange(xcode::link::handle_t xcode::link::*hdl,
-                xcode::link::handle_t xcode::link::*cntr,
+  void exchange(xcode::link::memptr hdl,
+                xcode::link::memptr cntr,
                 xcode::link& lhs,
                 xcode::link& rhs)
   {
@@ -51,7 +51,8 @@ void xcode::link::swap(link& lnk) noexcept
 {
   exchange(&link::prev, &link::next, *this, lnk);
   exchange(&link::next, &link::prev, *this, lnk);
-  exchange(&link::parent, nullptr, *this, lnk);
+  exchange(&link::parent, &link::children, *this, lnk);
+  exchange(&link::children, &link::parent, *this, lnk);
 }
 
 xcode::link::link(link&& lnk) noexcept : link()
@@ -72,9 +73,9 @@ void xcode::link::hook(link& nxt) noexcept
   }
   parent = nxt.parent;
   prev = nxt.prev;
-  prev->next = handle_t{this};
-  nxt.prev = handle_t{this};
-  next = handle_t{&nxt};
+  prev->next = this;
+  nxt.prev = this;
+  next = &nxt;
 }
 
 void xcode::link::unhook() noexcept
@@ -88,9 +89,5 @@ void xcode::link::unhook() noexcept
 
 void xcode::link::reparent(link& lnk) noexcept
 {
-  auto tmp = lnk.children != &lnk ? lnk.children : this;
-  lnk.children = children != this ? children : &lnk;
-  children = tmp;
-  lnk.children->parent = &lnk;
-  children->parent = this;
+  exchange(&link::children, &link::parent, *this, lnk);
 }

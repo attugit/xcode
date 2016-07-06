@@ -3,15 +3,15 @@
 
 namespace xcode
 {
-  template <typename T>
-  using handle = T*;
+  template <typename Cls, typename T>
+  using memptr = T Cls::*;
 
   struct link {
-    using handle_t = handle<link>;
-    handle_t prev;
-    handle_t next;
-    handle_t children;
-    handle_t parent;
+    using memptr = xcode::memptr<link, link*>;
+    link* prev;
+    link* next;
+    link* children;
+    link* parent;
 
     link() noexcept;
 
