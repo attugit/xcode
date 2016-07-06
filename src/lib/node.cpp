@@ -15,31 +15,19 @@ namespace
   {
     return is_cycled(&xcode::link::next, lnk);
   }
-  void pass(xcode::link::memptr hdl,
-            xcode::link::memptr cntr,
-            xcode::link* n,
-            xcode::link& lnk,
-            xcode::link& other)
-  {
-    if (n != &other) {
-      lnk.*hdl = n;
-      lnk.*hdl->*cntr = &lnk;
-    }
-    else
-    {
-      lnk.*hdl = &lnk;
-    }
-  }
 
   void exchange(xcode::link::memptr hdl,
                 xcode::link::memptr cntr,
                 xcode::link& lhs,
                 xcode::link& rhs)
   {
-    auto rhdl = rhs.*hdl;
+    auto const pass = [hdl, cntr](auto& lnk, auto& other, auto n) {
+      auto ret = lnk.*hdl;
+      lnk.*hdl = n != &other ? (n->*cntr = &lnk, n) : &lnk;
+      return ret;
+    };
 
-    pass(hdl, cntr, lhs.*hdl, rhs, lhs);
-    pass(hdl, cntr, rhdl, lhs, rhs);
+    pass(lhs, rhs, pass(rhs, lhs, lhs.*hdl));
   }
 }
 
