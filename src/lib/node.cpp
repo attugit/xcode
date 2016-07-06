@@ -85,3 +85,12 @@ void xcode::link::unhook() noexcept
   prev = this;
   parent = this;
 }
+
+void xcode::link::reparent(link& lnk) noexcept
+{
+  auto tmp = lnk.children != &lnk ? lnk.children : this;
+  lnk.children = children != this ? children : &lnk;
+  children = tmp;
+  lnk.children->parent = &lnk;
+  children->parent = this;
+}

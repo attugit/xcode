@@ -89,14 +89,14 @@ namespace xcode
     struct impl_type : node_allocator, link_allocator {
       impl_type()
       {
-        root.children = link_allocator::allocate(1);
-        new (root.children) link();
-        root.children->parent = &root;
-      };
+        init();
+      }
       ~impl_type()
       {
-        root.children->~link();
-        link_allocator::deallocate(root.children, 1);
+        if (!empty()) {
+          root.children->~link();
+          link_allocator::deallocate(root.children, 1);
+        }
       }
       link root;
       size_type size = 0;
@@ -108,12 +108,17 @@ namespace xcode
       {
         return *root.children;
       };
+      bool empty() const
+      {
+        return root.children == &root;
+      }
+      void init()
+      {
+        root.children = link_allocator::allocate(1);
+        new (root.children) link();
+        root.children->parent = &root;
+      }
     } impl;
-
-    void reparent()
-    {
-      impl.root.children->parent = &impl.root;
-    }
 
   public:
     using iterator = iterator_impl<value_type, node<value_type>, link>;
@@ -140,11 +145,8 @@ namespace xcode
     }
     siblings(siblings&& sib) : siblings()
     {
-      using std::swap;
-      swap(sib.impl.root.children, impl.root.children);
-      swap(sib.impl.size, impl.size);
-      reparent();
-      sib.reparent();
+      impl.root.reparent(sib.impl.root);
+      std::swap(sib.impl.size, impl.size);
     }
     siblings& operator=(siblings const& sib)
     {
@@ -156,11 +158,8 @@ namespace xcode
     }
     siblings& operator=(siblings&& sib)
     {
-      using std::swap;
-      swap(sib.impl.root.children, impl.root.children);
-      swap(sib.impl.size, impl.size);
-      reparent();
-      sib.reparent();
+      impl.root.reparent(sib.impl.root);
+      std::swap(sib.impl.size, impl.size);
       return *this;
     }
     ~siblings()
