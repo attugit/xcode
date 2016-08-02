@@ -14,8 +14,8 @@ Waf: Entering directory `/root/xcode/build/release'
 [ 7/14] Compiling test/tree/siblings_test.cpp
 [ 8/14] Compiling test/lazy/lazy_test.cpp
 [ 9/14] Linking build/release/libxc.so
-[10/14] Linking build/release/xCode
-[11/14] Linking build/release/ut_tree
+[10/14] Linking build/release/ut_tree
+[11/14] Linking build/release/xCode
 [12/14] Processing build/release/ut_tree
 [13/14] Linking build/release/ut_lazy
 [14/14] Processing build/release/ut_lazy
@@ -25,12 +25,12 @@ execution summary
     /root/xcode/build/release/ut_tree 
     /root/xcode/build/release/ut_lazy 
   tests that fail 0/2 
-'build_release' finished successfully (13.375s)
+'build_release' finished successfully (13.504s)
 Waf: Entering directory `/root/xcode/build/release'
 + install /root/xcode/build/usr/include/xcode/lazy.hpp (from inc/xcode/lazy.hpp)
 + install /root/xcode/build/usr/include/xcode/node.hpp (from inc/xcode/node.hpp)
 + install /root/xcode/build/usr/include/xcode/siblings.hpp (from inc/xcode/siblings.hpp)
-+ install /root/xcode/build/usr/lib/libxc.so (from build/release/libxc.so)
 + install /root/xcode/build/usr/bin/xCode (from build/release/xCode)
++ install /root/xcode/build/usr/lib/libxc.so (from build/release/libxc.so)
 Waf: Leaving directory `/root/xcode/build/release'
 'install_release' finished successfully (0.022s)
