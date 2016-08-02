@@ -1,16 +1,19 @@
 language: generic
 sudo: required
 services:
-  - docker
-
+- docker
 env:
+  global:
+  - TRAVIS_USER=travis
+  matrix:
   - COMPILER=g++-6 BUILDTYPE=debug
   - COMPILER=g++-6 BUILDTYPE=release
   - COMPILER=clang++-3.8 BUILDTYPE=debug
   - COMPILER=clang++-3.8 BUILDTYPE=release
-
 before_install:
-  - docker build -t attugit/xcode -f ci/testing.docker .
-
+- openssl aes-256-cbc -K $encrypted_49a800b0cce8_key -iv $encrypted_49a800b0cce8_iv
+  -in ci/travis.enc -out ci/ssh/travis -d
+- docker build --build-arg TRAVIS_USER=$TRAVIS_USER -t attugit/xcode -f ci/testing.docker .
 script:
-  - docker run --env=CXX=$COMPILER --env=BUILDTYPE=$BUILDTYPE --workdir=/attugit/xcode attugit/xcode /bin/bash -c "bash ./ci/run.sh"
+- docker run --env=CXX=$COMPILER --env=BUILDTYPE=$BUILDTYPE --volume=$PWD/ci/ssh:/home/$TRAVIS_USER/.ssh
+  --user=$TRAVIS_USER --workdir=/home/$TRAVIS_USER/xcode attugit/xcode /bin/bash -c "bash ./ci/run.sh"

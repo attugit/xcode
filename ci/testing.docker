@@ -1,4 +1,6 @@
-FROM attugit/dtest:v1.2
+FROM attugit/dtest:v1.4
+ARG TRAVIS_USER
 
-ADD . attugit/xcode
+ADD . /home/$TRAVIS_USER/xcode
+RUN chown $TRAVIS_USER:$TRAVIS_USER -R /home/$TRAVIS_USER/xcode
 
