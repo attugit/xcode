@@ -1,6 +1,7 @@
 FROM attugit/dtest:v1.4
 ARG TRAVIS_USER
 
-ADD . /home/$TRAVIS_USER/xcode
-RUN chown $TRAVIS_USER:$TRAVIS_USER -R /home/$TRAVIS_USER/xcode
+ADD . /root/xcode
+RUN chown root:root -R /root/xcode
+RUN git config --global user.name "travis-ci"
 
